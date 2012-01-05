@@ -3,10 +3,11 @@ package pl.edu.pjwstk.s8267.skj.proxy;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 
 public class Server {
 	private static final int PORT = 8080;
-	public Server() throws IOException {
+	public Server() throws IOException, NoSuchAlgorithmException {
 		ServerSocket server = new ServerSocket(PORT);
 		System.out.println("[S] Serwer jest urucomiony");
 		while(true) {
@@ -18,7 +19,7 @@ public class Server {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		new Server();
 	}
 }
