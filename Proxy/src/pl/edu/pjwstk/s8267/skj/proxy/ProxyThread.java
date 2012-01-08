@@ -1,15 +1,10 @@
 package pl.edu.pjwstk.s8267.skj.proxy;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -22,19 +17,19 @@ public class ProxyThread extends Thread {
 	private Socket client;
 	private InputStream fromClient;
 	private OutputStream toClient;
-	private InputStream fromServer;
 	private OutputStream toServer;
 	private MessageDigest md;
+	private String cacheDir;
 	
 
-	public ProxyThread(Socket client) throws NoSuchAlgorithmException {
+	public ProxyThread(Socket client, String cacheDir) throws NoSuchAlgorithmException {
 		md = MessageDigest.getInstance("MD5");
 		this.client = client;
+		this.cacheDir = cacheDir;
 		try {
 			this.fromClient = client.getInputStream();
 			this.toClient = client.getOutputStream();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -45,22 +40,20 @@ public class ProxyThread extends Thread {
 	public void run() {
 		StringBuilder header = new StringBuilder();
 		URL url = null;
-		String ifModifiedSince;
 		boolean inHeader = false;
 		Socket server = null;
 		try {
 			byte[] buffer = new byte[4096];
 			while(true) {
 				int len = fromClient.read(buffer);
-				if(len <= 0) continue;
+				if(len < 0) break;
 				String head = new String(buffer, 0, len);
-				int newRequest = -1;//head.indexOf("GET");
+				int newRequest = -1;
 				for(String method : methods) {
 					newRequest = head.indexOf(method);
 					if(newRequest > -1) break;
 				}
 				if(newRequest > -1) {
-					ifModifiedSince = null;
 					header = new StringBuilder();
 					inHeader = true;
 					if(newRequest > 0) {
@@ -78,7 +71,7 @@ public class ProxyThread extends Thread {
 					if(inHeader)
 						header.append(new String(buffer, 0, len));
 					else {
-						if(toServer != null) {
+						if(toServer != null && newRequest > 0) {
 							toServer.write(buffer, 0, newRequest);
 							toServer.flush();
 						}
@@ -89,21 +82,13 @@ public class ProxyThread extends Thread {
 					md.update(url.toString().getBytes());
 					BigInteger bigInt = new BigInteger(1,md.digest());
 					String hashtext = bigInt.toString(16);
-					// Now we need to zero pad it if you actually want the full 32 chars.
 					while(hashtext.length() < 32 ){
 					  hashtext = "0"+hashtext;
 					}
-					String p = "cache/"+hashtext+".bin";
-					/*if(url.getFile().equals("/"))
-						if(url.getPath().equals("/"))
-							p = url.getHost()+".bin";
-						else
-							p = url.getHost()+url.getPath()+".bin";
-					else
-						p = url.getHost()+url.getPath()+url.getFile()+".bin";*/
+					String p = hashtext+".bin";
 					
-					if(/*k<0 && */new File(new File("/tmp/"), p).exists()) {
-						InputStream is = new FileInputStream(new File(new File("/tmp/"), p));
+					if(k<0 && new File(new File(cacheDir), p).exists()) {
+						InputStream is = new FileInputStream(new File(new File(cacheDir), p));
 						byte[] b = new byte[4096];
 						while(true) {
 							int s = is.read(b);
@@ -116,7 +101,7 @@ public class ProxyThread extends Thread {
 						server = new Socket(InetAddress.getByName(url.getHost()), 80);
 						System.out.println("Pobieram adres "+url.getHost());
 						System.out.println("Adres "+url.getHost()+" to "+server.getInetAddress().getHostAddress());
-						File f = new File(new File("/tmp/"), p);
+						File f = new File(new File(cacheDir), p);
 						f.getParentFile().mkdirs();
 						
 						ServerReaderThread srt = new ServerReaderThread(server, client, f);
@@ -130,14 +115,12 @@ public class ProxyThread extends Thread {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Watek: "+url);
 			e.printStackTrace();
 		} finally {
 			try {
 				client.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

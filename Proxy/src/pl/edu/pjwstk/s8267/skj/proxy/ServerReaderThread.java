@@ -2,12 +2,10 @@ package pl.edu.pjwstk.s8267.skj.proxy;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.URL;
 
 public class ServerReaderThread extends Thread {
 	private Socket server;
@@ -30,7 +28,7 @@ public class ServerReaderThread extends Thread {
 				int n = fromServer.read(buffer);
 				if(n == -1) {
 					server.close();
-					break;
+					return;
 				}
 				if(n > 0) {
 					writer.write(buffer, 0, n);
@@ -46,7 +44,7 @@ public class ServerReaderThread extends Thread {
 					e1.printStackTrace();
 				}
 				e.printStackTrace();
-				break;
+				return;
 			}
 		}
 	}
