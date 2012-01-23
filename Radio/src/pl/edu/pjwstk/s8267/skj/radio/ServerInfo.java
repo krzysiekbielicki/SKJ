@@ -53,8 +53,8 @@ public class ServerInfo extends Thread {
 							String encoding = null;
 							if(rc.getEncoding() == AudioFormat.Encoding.ALAW)
 								encoding = "ALAW";
-							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_FLOAT)
-								encoding = "PCM_FLOAT";
+							/*else if(rc.getEncoding() == AudioFormat.Encoding.PCM_FLOAT)
+								encoding = "PCM_FLOAT";*/
 							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_SIGNED)
 								encoding = "PCM_SIGNED";
 							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_UNSIGNED)
