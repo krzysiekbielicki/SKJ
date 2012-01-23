@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Vector;
 
+import javax.sound.sampled.AudioFormat;
+
 public class ServerInfo extends Thread {
 
 	private Socket client;
@@ -48,7 +50,18 @@ public class ServerInfo extends Thread {
 						bw.write("CHANNELS\n");
 						for(int i = 0; i < radioChannels.size(); i++) {
 							RadioChannel rc = radioChannels.get(i);
-							bw.write(rc.getChannelName()+"\t"+(10000+i)+"\t"+rc.getFrameRate()+"\t"+rc.getFrameSize()+"\n");
+							String encoding = null;
+							if(rc.getEncoding() == AudioFormat.Encoding.ALAW)
+								encoding = "ALAW";
+							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_FLOAT)
+								encoding = "PCM_FLOAT";
+							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_SIGNED)
+								encoding = "PCM_SIGNED";
+							else if(rc.getEncoding() == AudioFormat.Encoding.PCM_UNSIGNED)
+								encoding = "PCM_UNSIGNED";
+							else if(rc.getEncoding() == AudioFormat.Encoding.ULAW)
+								encoding = "ULAW";
+							bw.write(rc.getChannelName()+"\t"+(10000+i)+"\t"+rc.getFrameRate()+"\t"+rc.getFrameSize()+"\t"+encoding+"\n");
 						}
 						bw.write("END CHANNELS\n");
 					} else {

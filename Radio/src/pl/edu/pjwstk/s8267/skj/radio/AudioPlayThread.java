@@ -24,7 +24,7 @@ public class AudioPlayThread extends Thread {
 		try {
 			socket = new MulticastSocket(port);
 			InetAddress address = InetAddress.getByName("230.0.0.1");
-			//socket.joinGroup(address);
+			socket.joinGroup(address);
 			AudioFormat af = client.getAudioFormat();
 			
 			DataLine.Info dataLineInfo = new DataLine.Info(

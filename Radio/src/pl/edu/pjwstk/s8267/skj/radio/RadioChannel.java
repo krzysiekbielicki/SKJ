@@ -3,11 +3,12 @@ package pl.edu.pjwstk.s8267.skj.radio;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -18,6 +19,7 @@ public class RadioChannel extends Thread {
 	private File channelDirectory;
 	private float frameRate;
 	private int frameSize;
+	private Encoding encoding;
 
 	public RadioChannel(File channelDirectory, int port) {
 		this.port = port;
@@ -27,9 +29,9 @@ public class RadioChannel extends Thread {
 	@Override
 	public void run() {
 		try {
-			MulticastSocket ds = new MulticastSocket();
-			//InetAddress group = InetAddress.getByName("230.0.0.1");
-			InetAddress group = InetAddress.getByName("127.0.0.1");
+			DatagramSocket ds = new DatagramSocket();
+			InetAddress group = InetAddress.getByName("230.0.0.1");
+			//InetAddress group = InetAddress.getByName("127.0.0.1");
 			AudioInputStream stream;
 			int i = 0;
 			File[] files = channelDirectory.listFiles();
@@ -37,6 +39,7 @@ public class RadioChannel extends Thread {
 	            stream = AudioSystem.getAudioInputStream(files[i]);
 	            frameRate = stream.getFormat().getFrameRate();
 	            frameSize = stream.getFormat().getFrameSize();
+	            encoding = stream.getFormat().getEncoding();
 	            //Clip c = AudioSystem.getClip();
 	            //c.open(stream);
 	            //c.start();
@@ -48,7 +51,7 @@ public class RadioChannel extends Thread {
 	            		break;
 					ds.send(new DatagramPacket(buffer, len, group, port));
 					try {
-						Thread.sleep(8);
+						Thread.sleep(250);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -83,6 +86,10 @@ public class RadioChannel extends Thread {
 	
 	public String getChannelName() {
 		return channelDirectory.getName();
+	}
+	
+	public Encoding getEncoding() {
+		return encoding;
 	}
 
 }

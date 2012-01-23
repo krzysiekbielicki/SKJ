@@ -11,7 +11,7 @@ public class Server extends Thread {
 	private int port;
 	private Vector<RadioChannel> radioChannels;
 
-	public Server(int port, String channelsDirecotry) {
+	public Server(int port, String channelsDirecotry, int firstSendPort) {
 		this.port = port;
 		radioChannels = new Vector<RadioChannel>();
 		File[] channels = new File(channelsDirecotry).listFiles(new FileFilter() {
@@ -21,7 +21,7 @@ public class Server extends Thread {
 			}
 		});
 		for(int i = 0; i < channels.length; i++) {
-			RadioChannel rc = new RadioChannel(channels[i], 10000+i);
+			RadioChannel rc = new RadioChannel(channels[i], firstSendPort+i);
 			radioChannels.addElement(rc);
 			rc.start();
 		}
@@ -45,8 +45,8 @@ public class Server extends Thread {
 	
 	public static void main(String[] args) {
 		if(args.length == 0)
-			new Server(8000, "channels/");
+			new Server(8000, "channels/", 10000);
 		else
-			new Server(Integer.parseInt(args[0]), args[1]);
+			new Server(Integer.parseInt(args[0]), args[1], Integer.parseInt(args[2]));
 	}
 }
